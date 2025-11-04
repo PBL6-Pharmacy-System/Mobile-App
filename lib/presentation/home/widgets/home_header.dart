@@ -17,6 +17,7 @@ class HomeHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: Gap.sM,
         children: [
+          Gap.smHeight,
           Text(
             'Nhà thuốc Long Châu',
             style: context.textTheme.titleMedium?.copyWith(color: Colors.white),

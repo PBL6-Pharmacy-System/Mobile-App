@@ -32,3 +32,35 @@ void showAddToCartSuccess(BuildContext context, String productName) {
     leftBarIndicatorColor: Colors.green,
   ).show(context);
 }
+
+void showCheckoutSuccess(BuildContext context) {
+  Flushbar(
+    margin: const EdgeInsets.all(8),
+    borderRadius: BorderRadius.circular(12),
+    backgroundColor: Colors.white,
+    boxShadows: const [
+      BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
+    ],
+    flushbarPosition: FlushbarPosition.TOP,
+    duration: const Duration(seconds: 2),
+    messageText: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Thanh toán thành công',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        Text(
+          'Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đang được xử lý.',
+          style: const TextStyle(color: Colors.black54, fontSize: 14),
+        ),
+      ],
+    ),
+    icon: const Icon(Icons.check_circle, color: Colors.green, size: 28),
+    leftBarIndicatorColor: Colors.green,
+  ).show(context);
+}

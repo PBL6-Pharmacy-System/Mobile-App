@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pharmacy_app/configs/constant.dart';
+import 'package:pharmacy_app/configs/extensions.dart';
 import 'package:pharmacy_app/configs/gap.dart';
 import 'package:pharmacy_app/fake_data.dart';
 import 'package:pharmacy_app/models/category_model.dart';
@@ -34,6 +35,15 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: primaryColor,
+        leading: SizedBox.shrink(),
+        centerTitle: true,
+        title: Text(
+          'Danh mục sản phẩm',
+          style: context.textTheme.titleSmall?.copyWith(color: Colors.white),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: paddingApp,

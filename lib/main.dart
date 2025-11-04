@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:pharmacy_app/home_screen.dart';
+import 'package:pharmacy_app/presentation/authentication/login_page.dart';
+import 'package:pharmacy_app/provider/app_state.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AppState(),
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -12,7 +19,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: LoginPage(),
     );
   }
 }

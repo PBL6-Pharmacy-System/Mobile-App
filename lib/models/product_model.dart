@@ -1,15 +1,21 @@
 import 'package:pharmacy_app/models/category_model.dart';
 
 class ProductModel {
-  final String name;
   final CategoryModel category;
-  final String image;
+  final String name;
   final double price;
+  final String image;
+  final String description;
+  final String usage;
+  final String ingredients;
 
-  const ProductModel({
+  ProductModel({
     required this.category,
-    required this.image,
     required this.name,
     required this.price,
+    required this.image,
+    required this.description,
+    required this.usage,
+    required this.ingredients,
   });
 }

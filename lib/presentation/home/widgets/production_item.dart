@@ -7,6 +7,8 @@ import 'package:pharmacy_app/configs/formatter.dart';
 import 'package:pharmacy_app/configs/gap.dart';
 import 'package:pharmacy_app/models/product_model.dart';
 import 'package:pharmacy_app/presentation/detail_product/product_detail_page.dart';
+import 'package:pharmacy_app/provider/app_state.dart';
+import 'package:provider/provider.dart';
 
 class ProductionItem extends StatelessWidget {
   const ProductionItem(this.product, {super.key});
@@ -70,6 +72,7 @@ class ProductionItem extends StatelessWidget {
                   child: Text('Thêm vào giỏ'),
                   onPressed: () {
                     showAddToCartSuccess(context, product.name);
+                    context.read<AppState>().addToCart(product);
                   },
                 ),
               ],

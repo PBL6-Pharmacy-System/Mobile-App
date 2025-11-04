@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pharmacy_app/configs/constant.dart';
+import 'package:pharmacy_app/presentation/account/account_page.dart';
+import 'package:pharmacy_app/presentation/cart/cart_page.dart';
 import 'package:pharmacy_app/presentation/category/category_page.dart';
+import 'package:pharmacy_app/presentation/chat/chat_page.dart';
 import 'package:pharmacy_app/presentation/home/home_page.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,9 +20,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     HomePage(),
     CategoryPage(),
-    const Center(child: Text('Cá nhân')),
-    const Center(child: Text('Cá nhân')),
-    const Center(child: Text('Cá nhân')),
+    CartPage(),
+    ChatPage(),
+    AccountPage(),
   ];
 
   void _onItemTapped(int index) {
