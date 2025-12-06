@@ -45,7 +45,7 @@ class _QuantitySelectorState extends State<QuantitySelector> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: double.infinity,
+      height: 40,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: radius8,
@@ -53,18 +53,32 @@ class _QuantitySelectorState extends State<QuantitySelector> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: InkWell(onTap: _decrease, child: const Icon(Icons.remove)),
+          InkWell(
+            onTap: _decrease,
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              child: const Icon(Icons.remove, size: 20),
+            ),
           ),
-          Expanded(
+          Container(
+            width: 40,
+            alignment: Alignment.center,
             child: Text(
               '$quantity',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(
-            child: InkWell(onTap: _increase, child: const Icon(Icons.add)),
+          InkWell(
+            onTap: _increase,
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              child: const Icon(Icons.add, size: 20),
+            ),
           ),
         ],
       ),

@@ -1,6 +1,6 @@
 name: pharmacy_app
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -8,12 +8,21 @@ environment:
 
 dependencies:
   another_flushbar: ^1.12.32
+  cached_network_image: ^3.4.1
   carousel_slider: ^5.1.1
+  dio: ^5.9.0
   flutter:
     sdk: flutter
   flutter_svg: ^2.2.1
+  http: ^1.2.2
   intl: ^0.20.2
   provider: ^6.1.5+1
+  flutter_secure_storage: ^9.2.2
+  image_picker: ^1.0.7
+  shared_preferences: ^2.3.5
+  shimmer: ^3.0.0
+  url_launcher: ^6.3.1
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +34,4 @@ flutter:
   assets:
     - assets/
     - assets/images/
+    - assets/banners/

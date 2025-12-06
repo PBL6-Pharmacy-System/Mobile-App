@@ -1,11 +1,13 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:pharmacy_app/common/widgets/button_app.dart';
 import 'package:pharmacy_app/common/widgets/text_field_app.dart';
 import 'package:pharmacy_app/configs/constant.dart';
 import 'package:pharmacy_app/configs/extensions.dart';
 import 'package:pharmacy_app/configs/gap.dart';
-import 'package:pharmacy_app/home_screen.dart';
-import 'package:pharmacy_app/presentation/authentication/register_page.dart';
+import 'package:pharmacy_app/presentation/authentication/otp_verification_page.dart';
+import 'package:pharmacy_app/provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,9 +17,63 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  bool isPasswordVisible = false;
+  final phoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  void _showMessage(String message, {bool isError = false}) {
+    Flushbar(
+      message: message,
+      duration: const Duration(seconds: 3),
+      backgroundColor: isError ? Colors.red : Colors.green,
+      margin: const EdgeInsets.all(8),
+      borderRadius: BorderRadius.circular(8),
+      flushbarPosition: FlushbarPosition.TOP,
+    ).show(context);
+  }
+
+  Future<void> _handleSendOTP() async {
+    final input = phoneController.text.trim();
+
+    if (input.isEmpty) {
+      _showMessage('Vui lòng nhập số điện thoại hoặc email', isError: true);
+      return;
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    _showMessage('Đang gửi mã OTP...');
+
+    // Detect if input is email or phone
+    final bool isEmail = input.contains('@');
+    final result = await authProvider.requestOTP(
+      phone: isEmail ? null : input,
+      email: isEmail ? input : null,
+    );
+
+    if (!mounted) return;
+
+    if (result['success'] == true) {
+      _showMessage('Mã OTP đã được gửi!');
+
+      // Navigate to OTP verification page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpVerificationPage(
+            phoneNumber: isEmail ? null : input,
+            email: isEmail ? input : null,
+          ),
+        ),
+      );
+    } else {
+      _showMessage(result['message'] ?? 'Không thể gửi OTP', isError: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,86 +124,43 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    TextFieldApp(
-                      controller: emailController,
-                      labelText: "Email",
-                      hintText: "Nhập email của bạn",
+                    const Text(
+                      "Nhập số điện thoại hoặc email để nhận mã OTP",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: greyColor),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     TextFieldApp(
-                      controller: passwordController,
-                      hintText: 'Nhập mật khẩu',
-                      labelText: 'Mật khẩu',
-                      obscureText: isPasswordVisible,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () => setState(
-                          () => isPasswordVisible = !isPasswordVisible,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Quên mật khẩu?",
-                          style: TextStyle(color: primaryColor),
-                        ),
-                      ),
+                      controller: phoneController,
+                      labelText: "Số điện thoại / Email",
+                      hintText: "Nhập SĐT hoặc email",
+                      prefixIcon: const Icon(Icons.phone_android),
+                      keyboardType: TextInputType.emailAddress,
                     ),
 
-                    Gap.smHeight,
-                    ButtonApp(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                    const SizedBox(height: 24),
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, _) {
+                        return ButtonApp(
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : _handleSendOTP,
+                          child: authProvider.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text("Gửi mã OTP"),
                         );
                       },
-                      child: const Text("Đăng nhập"),
                     ),
-                    Gap.mdHeight,
 
-                    Row(
-                      children: const [
-                        Expanded(child: Divider()),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: Gap.sm),
-                          child: Text("hoặc"),
-                        ),
-                        Expanded(child: Divider()),
-                      ],
-                    ),
-                    Gap.sMHeight,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Chưa có tài khoản?  "),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RegisterPage(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            "Đăng ký ngay",
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    Gap.mdHeight,
                   ],
                 ),
               ),

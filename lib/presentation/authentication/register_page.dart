@@ -15,8 +15,6 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   bool _agree = false;
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -90,67 +88,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       Gap.sMHeight,
 
-                      // Email
-                      TextFieldApp(
-                        labelText: "Email *",
-                        prefixIcon: Icon(Icons.email_outlined),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      Gap.sMHeight,
-
                       // Số điện thoại
                       TextFieldApp(
                         labelText: "Số điện thoại *",
                         prefixIcon: Icon(Icons.phone_android_outlined),
                         keyboardType: TextInputType.phone,
-                      ),
-                      Gap.sMHeight,
-
-                      // Địa chỉ
-                      TextFieldApp(
-                        labelText: "Địa chỉ *",
-                        prefixIcon: Icon(Icons.location_on_outlined),
-                      ),
-                      Gap.sMHeight,
-
-                      // Mật khẩu
-                      TextFieldApp(
-                        obscureText: _obscurePassword,
-                        labelText: "Mật khẩu *",
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                      Gap.sMHeight,
-
-                      // Xác nhận mật khẩu
-                      TextFieldApp(
-                        obscureText: _obscureConfirmPassword,
-                        labelText: "Xác nhận mật khẩu *",
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword;
-                            });
-                          },
-                        ),
                       ),
                       Gap.mdHeight,
 

@@ -12,6 +12,8 @@ class ListProductByCategory extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       shrinkWrap: true,
+      physics:
+          const NeverScrollableScrollPhysics(), // Disable scroll, để parent scroll
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: Gap.sm,

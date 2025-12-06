@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pharmacy_app/configs/gap.dart';
+import 'package:pharmacy_app/presentation/home/widgets/flash_sale_section.dart';
 import 'package:pharmacy_app/presentation/home/widgets/home_category.dart';
 import 'package:pharmacy_app/presentation/home/widgets/home_header.dart';
 import 'package:pharmacy_app/presentation/home/widgets/image_slider.dart';
@@ -23,8 +24,13 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                spacing: Gap.md,
-                children: [ImageSlider(), HomeCategory(), OutstandingProduct()],
+                spacing: Gap.sm,
+                children: [
+                  HomeCategory(),
+                  ImageSlider(),
+                  FlashSaleSection(),
+                  OutstandingProduct(),
+                ],
               ),
             ),
           ),

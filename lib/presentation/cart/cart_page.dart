@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pharmacy_app/common/widgets/button_app.dart';
+import 'package:pharmacy_app/common/widgets/shimmer_loading.dart';
 import 'package:pharmacy_app/configs/constant.dart';
 import 'package:pharmacy_app/configs/extensions.dart';
 import 'package:pharmacy_app/configs/gap.dart';
-import 'package:pharmacy_app/models/product_model.dart';
+import 'package:pharmacy_app/home_screen.dart';
+import 'package:pharmacy_app/models/cart_model.dart';
 import 'package:pharmacy_app/presentation/cart/widgets/cart_item.dart';
 import 'package:pharmacy_app/presentation/checkout/checkout_page.dart';
-import 'package:pharmacy_app/provider/app_state.dart';
+import 'package:pharmacy_app/provider/auth_provider.dart';
+import 'package:pharmacy_app/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -18,39 +21,168 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
+  final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCart();
+    });
+  }
+
+  void _loadCart() {
+    final authProvider = context.read<AuthProvider>();
+    final cartProvider = context.read<CartProvider>();
+
+    if (authProvider.isLoggedIn && authProvider.currentUser != null) {
+      // Sử dụng customerId (ID trong bảng customers), không phải id (ID trong bảng users)
+      final customerId = authProvider.currentUser!.customerId;
+      print('📦 [CartPage] Loading cart for customerId: $customerId');
+
+      if (customerId != null) {
+        cartProvider.fetchCart(customerId);
+      } else {
+        print('❌ [CartPage] No customerId found for user');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final carts = context.watch<AppState>().carts;
-
     return Scaffold(
-      appBar: _buildAppbar(context, carts),
+      appBar: _buildAppbar(context),
       body: SafeArea(
-        child: carts.isEmpty
-            ? _buildEmpty(context)
-            : Column(
-                children: [
-                  _buildListItem(carts),
-                  Divider(height: 1),
-                  _buildCartInfo(context),
-                ],
+        child: Consumer2<CartProvider, AuthProvider>(
+          builder: (context, cartProvider, authProvider, child) {
+            if (!authProvider.isLoggedIn) {
+              return _buildNotLoggedIn(context);
+            }
+
+            if (cartProvider.isLoading) {
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: 3,
+                itemBuilder: (_, __) => const CartItemShimmer(),
+              );
+            }
+
+            final cart = cartProvider.cart;
+            final items = cart?.items ?? [];
+
+            if (items.isEmpty) {
+              return _buildEmptyCart(context);
+            }
+
+            return Column(
+              children: [
+                _buildListItem(items),
+                const Divider(height: 1),
+                _buildCartInfo(context, cartProvider),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyCart(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(Gap.md),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.remove_shopping_cart_outlined,
+              size: 70,
+              color: Colors.grey[350],
+            ),
+            Gap.mdHeight,
+            Text(
+              'Giỏ hàng trống',
+              style: context.textTheme.titleSmall?.copyWith(
+                color: Colors.grey[600],
               ),
+            ),
+            Gap.smHeight,
+            Text(
+              'Hãy thêm sản phẩm vào giỏ hàng của bạn',
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[500],
+              ),
+            ),
+            Gap.mdHeight,
+            SizedBox(
+              width: 180,
+              child: ButtonApp(
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                    (route) => false,
+                  );
+                },
+                child: const Text('Tiếp tục mua sắm'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  _buildAppbar(BuildContext context, List<ProductModel> carts) {
+  AppBar _buildAppbar(BuildContext context) {
+    // Kiểm tra xem có thể pop hay không
+    final canPop = Navigator.canPop(context);
+
     return AppBar(
-      backgroundColor: primaryColor,
-      leading: SizedBox.shrink(),
+      elevation: 0,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [primaryColor, primaryLightColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () {
+          if (canPop) {
+            Navigator.pop(context);
+          } else {
+            // Nếu không thể pop, quay về trang chủ
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const HomeScreen(initialIndex: 0),
+              ),
+              (route) => false,
+            );
+          }
+        },
+      ),
       centerTitle: true,
-      title: Text(
-        'Giỏ hàng (${carts.length})',
-        style: context.textTheme.titleSmall?.copyWith(color: Colors.white),
+      title: Consumer<CartProvider>(
+        builder: (context, cartProvider, _) {
+          return Text(
+            'Giỏ hàng (${cartProvider.itemCount})',
+            style: context.textTheme.titleSmall?.copyWith(color: Colors.white),
+          );
+        },
       ),
     );
   }
 
-  _buildCartInfo(BuildContext context) {
+  Widget _buildCartInfo(BuildContext context, CartProvider cartProvider) {
+    final subtotal = cartProvider.subtotal;
+    final discount = cartProvider.voucherDiscount;
+    final total = cartProvider.total;
+
     return Padding(
       padding: EdgeInsets.all(Gap.md),
       child: Column(
@@ -61,9 +193,26 @@ class _CartPageState extends State<CartPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Tạm tính:', style: context.textTheme.bodySmall),
-              Text('13.500đ', style: context.textTheme.bodyMedium),
+              Text(
+                currencyFormatter.format(subtotal),
+                style: context.textTheme.bodyMedium,
+              ),
             ],
           ),
+          if (discount > 0)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Giảm giá:', style: context.textTheme.bodySmall),
+                Text(
+                  '- ${currencyFormatter.format(discount)}',
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,67 +226,72 @@ class _CartPageState extends State<CartPage> {
               ),
             ],
           ),
-          Divider(height: 1),
+          const Divider(height: 1),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Tổng cộng:', style: context.textTheme.bodySmall),
               Text(
-                '13.500đ',
+                currencyFormatter.format(total),
                 style: context.textTheme.bodyMedium?.copyWith(
                   color: primaryColor,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
           Gap.smHeight,
           ButtonApp(
-            child: Text('Thanh toán'),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CheckoutPage()),
+                MaterialPageRoute(builder: (context) => const CheckoutPage()),
               );
             },
+            child: const Text('Thanh toán'),
           ),
         ],
       ),
     );
   }
 
-  _buildListItem(List<ProductModel> carts) {
+  Widget _buildListItem(List<CartItemModel> items) {
     return Expanded(
       child: Padding(
-        padding: EdgeInsetsDirectional.all(Gap.md),
+        padding: const EdgeInsetsDirectional.all(Gap.md),
         child: ListView.builder(
-          itemCount: carts.length,
+          itemCount: items.length,
           itemBuilder: (context, index) {
-            return CartItem(carts[index]);
+            final item = items[index];
+            return CartItem(item);
           },
         ),
       ),
     );
   }
 
-  _buildEmpty(BuildContext context) {
+  Widget _buildNotLoggedIn(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(Gap.md),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         spacing: Gap.md,
         children: [
-          Gap.xxlHeight,
-          SvgPicture.asset(
-            'assets/images/shopping-bag.svg',
-            width: 100,
-            height: 100,
-          ),
-          Text('Giỏ hàng trống', style: context.textTheme.titleSmall),
+          Icon(Icons.login, size: 80, color: Colors.grey[400]),
+          Text('Vui lòng đăng nhập', style: context.textTheme.titleSmall),
           Text(
-            'Hãy thêm sản phẩm vào giỏ hàng của bạn',
+            'Bạn cần đăng nhập để xem giỏ hàng',
             style: context.textTheme.bodyMedium?.copyWith(color: textColor),
+            textAlign: TextAlign.center,
           ),
-          ButtonApp(child: Text('Tiếp tục mua sắm'), onPressed: () {}),
+          ButtonApp(
+            onPressed: () {
+              // Navigate to login
+              Navigator.pop(context);
+            },
+            child: const Text('Đăng nhập ngay'),
+          ),
         ],
       ),
     );
